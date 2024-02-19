@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Contracts.Dtos
 {
-    public class ConverterInputDto
-    {
-    }
+	public class ConverterInputDto
+	{
+		public string SqlContentInBase64 { get; set; }
+	}
 }

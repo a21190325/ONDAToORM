@@ -1,9 +1,9 @@
 ﻿using Contracts;
 using Contracts.Interfaces;
+using DataAccess;
 using Domain.Repositories;
 using Services;
 using Services.Mapper;
-using WebAPI.Authentication;
 
 namespace WebAPI
 {

@@ -16,7 +16,7 @@ namespace Contracts.Dtos.Shared
 
         public ResultDto()
         {
-            Errors = new HashSet<ErrorDto>();
+            Errors = [];
             IsValid = true;
         }
 

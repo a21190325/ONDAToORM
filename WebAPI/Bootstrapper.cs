@@ -7,7 +7,7 @@ using Services.Mapper;
 
 namespace WebAPI
 {
-	public static class Bootstrapper
+    public static class Bootstrapper
 	{
 		public static IServiceCollection RegisterServices(this IServiceCollection services)
 		{
@@ -21,5 +21,5 @@ namespace WebAPI
 
 			return services;
 		}
-	}
+    }
 }

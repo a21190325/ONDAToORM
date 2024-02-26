@@ -23,7 +23,7 @@ namespace WebAPI.Controllers
 				rawContent = await sr.ReadToEndAsync().ConfigureAwait(false);
 			}
 
-			ResultDto<string> result = await converterService.ExecuteServiceAsync(new ConverterInputDto
+			ResultDto<List<FileDto>> result = await converterService.ExecuteServiceAsync(new ConverterInputDto
 			{
 				SqlContentInBase64 = rawContent
 			});

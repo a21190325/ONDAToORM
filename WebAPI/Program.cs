@@ -8,7 +8,7 @@ using WebAPI.Swagger;
 
 namespace WebAPI
 {
-	public class Program
+    public class Program
     {
         public static void Main(string[] args)
         {
@@ -43,7 +43,7 @@ namespace WebAPI
             builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
             builder.Services.RegisterServices();
 
-			var app = builder.Build();
+            var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

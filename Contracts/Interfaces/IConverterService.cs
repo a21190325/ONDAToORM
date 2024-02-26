@@ -1,4 +1,5 @@
 ﻿using Contracts.Dtos;
+using Contracts.Dtos.Shared;
 using Contracts.Interfaces.Shared;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Interfaces
 {
-    public interface IConverterService : IService<ConverterInputDto, string>
+    public interface IConverterService : IService<ConverterInputDto, List<FileDto>>
     {
     }
 }

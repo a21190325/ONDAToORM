@@ -7,23 +7,17 @@ using Domain.Repositories;
 
 namespace Services
 {
-	public class GenerateTokenService : Service<GenerateTokenInputDto, GenerateTokenOutputDto>, IGenerateTokenService
+	public class GenerateTokenService(IUserRepository userRepository, ITokenService tokenService, IInstanceMapper instanceMapper) : Service<GenerateTokenInputDto, GenerateTokenOutputDto>, IGenerateTokenService
 	{
-		private IUserRepository userRepository;
-		private ITokenService tokenService;
-		private IInstanceMapper instanceMapper;
+		private readonly IUserRepository userRepository = userRepository;
+		private readonly ITokenService tokenService = tokenService;
+		private readonly IInstanceMapper instanceMapper = instanceMapper;
 
-		public GenerateTokenService(IUserRepository userRepository, ITokenService tokenService, IInstanceMapper instanceMapper)
-		{
-			this.userRepository = userRepository;
-			this.tokenService = tokenService;
-			this.instanceMapper = instanceMapper;
-		}
-		protected override async Task<ResultDto<GenerateTokenOutputDto>> ExecuteAsync(GenerateTokenInputDto inputDto, CancellationToken cancellationToken = default)
+        protected override async Task<ResultDto<GenerateTokenOutputDto>> ExecuteAsync(GenerateTokenInputDto inputDto, CancellationToken cancellationToken = default)
 		{
 			var executionErrors = ValidateInput(inputDto);
 
-			var user = await userRepository.Get(inputDto.Username, inputDto.Password);
+			var user = userRepository.Get(inputDto.Username, inputDto.Password);
 
 			if (user == null)
 			{
@@ -47,7 +41,7 @@ namespace Services
 
 		private static List<ErrorDto> ValidateInput(GenerateTokenInputDto inputDto)
 		{
-			List<ErrorDto> validationErrors = new List<ErrorDto>();
+            List<ErrorDto> validationErrors = [];
 
 			if (string.IsNullOrWhiteSpace(inputDto.Username))
 				validationErrors.Add(new ErrorDto(ErrorCodes.REQUIRED_FIELD_IS_EMPTY, nameof(inputDto.Username)));

@@ -5,11 +5,13 @@ namespace DataAccess
 {
 	public class UserRepository : IUserRepository
 	{
-		public async Task<User> Get(string username, string password)
-		{
-			var users = new List<User>();
-			users.Add(new User { Id = 1, Username = "root", Password = "root", Role = "manager" });
-			return users.FirstOrDefault(x => x.Username.ToLower() == username.ToLower() && x.Password.ToLower() == password);
-		}
-	}
+        public User? Get(string username, string password)
+        {
+            var users = new List<User>
+            {
+                new() { Id = 1, Username = "root", Password = "root", Role = "manager" }
+            };
+            return users.FirstOrDefault(x => x.Username.Equals(username, StringComparison.OrdinalIgnoreCase) && x.Password.Equals(password, StringComparison.OrdinalIgnoreCase));
+        }
+    }
 }

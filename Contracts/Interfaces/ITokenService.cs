@@ -1,9 +1,8 @@
-﻿using Domain.Entities;
-
+﻿using Contracts.Dtos;
 namespace Contracts.Interfaces
 {
 	public interface ITokenService
 	{
-		string GenerateToken(User user);
+		string GenerateToken(UserDto user);
 	}
 }

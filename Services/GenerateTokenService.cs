@@ -24,18 +24,20 @@ namespace Services
 				executionErrors.Add(new ErrorDto(ErrorCodes.UNAUTHORIZED_ACTION_FOR_CALLING_USER));
 			}
 
+			var userDto = instanceMapper.Map<UserDto>(user);
+
 			if (executionErrors.Count > 0)
 			{
 				return BuildOperationResultDto(executionErrors);
 			}
 
-			var token = tokenService.GenerateToken(user);
+			var token = tokenService.GenerateToken(userDto);
 			user.Password = "";
 
 			return BuildOperationResultDto(new GenerateTokenOutputDto
 			{
 				Token = token,
-				User = instanceMapper.Map<UserDto>(user)
+				User = userDto
 			});
 		}
 

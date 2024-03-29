@@ -13,7 +13,7 @@ namespace WebAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var config = builder.Configuration;
+            IConfiguration configuration = builder.Configuration;
 
             builder.Services.AddAuthentication(x =>
             {
@@ -36,8 +36,16 @@ namespace WebAPI
             builder.Services.AddAuthorization();
 
             // Add services to the container.
-            builder.Services.AddCors();
-            builder.Services.AddControllers();
+            builder.Services.AddCors(options =>
+			{
+				options.AddDefaultPolicy(builder =>
+				{
+					builder.AllowAnyOrigin()
+						   .AllowAnyMethod()
+						   .AllowAnyHeader();
+				});
+			});
+			builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
@@ -54,10 +62,7 @@ namespace WebAPI
 
             app.UseHttpsRedirection();
 
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyMethod());
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();

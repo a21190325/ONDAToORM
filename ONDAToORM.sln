@@ -9,9 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "Contracts\Cont
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "Services\Services.csproj", "{A4571852-FD32-43F1-8D2F-EF029AAE6106}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{786244D7-8F38-41D1-9021-AA1E8E19ECC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{786244D7-8F38-41D1-9021-AA1E8E19ECC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{F877A180-6487-44E3-89F2-E5E85A4B7B60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{F877A180-6487-44E3-89F2-E5E85A4B7B60}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{AD95EADD-FB75-4511-8F42-C37101D9EAE0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{2FA2DD73-A762-4E63-8D0B-C4B99C158ADD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,6 +46,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{35F15469-4077-4E12-BCFE-60BC9BCB0EB1} = {2FA2DD73-A762-4E63-8D0B-C4B99C158ADD}
+		{A46C45B4-131D-43FD-9D88-A7D84554FDBF} = {AD95EADD-FB75-4511-8F42-C37101D9EAE0}
+		{A4571852-FD32-43F1-8D2F-EF029AAE6106} = {AD95EADD-FB75-4511-8F42-C37101D9EAE0}
+		{786244D7-8F38-41D1-9021-AA1E8E19ECC6} = {AD95EADD-FB75-4511-8F42-C37101D9EAE0}
+		{F877A180-6487-44E3-89F2-E5E85A4B7B60} = {2FA2DD73-A762-4E63-8D0B-C4B99C158ADD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {812B5EC3-99E2-492E-90DA-DCF21C64C97F}

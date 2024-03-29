@@ -1,6 +1,6 @@
-﻿using Contracts.Dtos.Shared;
+﻿using Contracts.Dtos;
+using Contracts.Dtos.Shared;
 using Contracts.Interfaces;
-using Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -10,7 +10,7 @@ namespace Services
 {
 	public class TokenService : ITokenService
 	{
-		public string GenerateToken(User user)
+		public string GenerateToken(UserDto user)
 		{
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var key = Encoding.ASCII.GetBytes(Settings.Secret);

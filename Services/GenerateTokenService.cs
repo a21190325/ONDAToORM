@@ -32,7 +32,7 @@ namespace Services
 			}
 
 			var token = tokenService.GenerateToken(userDto);
-			user.Password = "";
+			userDto.Password = "";
 
 			return BuildOperationResultDto(new GenerateTokenOutputDto
 			{

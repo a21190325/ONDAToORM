@@ -14,19 +14,10 @@ namespace WebAPI.Controllers
 		[HttpPost]
 		[Route("api/[controller]/convert")]
 		public async Task<IActionResult> Convert(
-			[FromServices] IConverterService converterService)
+			[FromServices] IConverterService converterService,
+			[FromBody] ConverterInputDto inputDto)
 		{
-			string? rawContent = default;
-			using (var contentStream = Request.Body)
-			{
-				using var sr = new StreamReader(contentStream);
-				rawContent = await sr.ReadToEndAsync().ConfigureAwait(false);
-			}
-
-			ResultDto<List<FileDto>> result = await converterService.ExecuteServiceAsync(new ConverterInputDto
-			{
-				SqlContentInBase64 = rawContent
-			});
+			ResultDto<List<FileDto>> result = await converterService.ExecuteServiceAsync(inputDto);
 			return Ok(result);
 		}
 	}

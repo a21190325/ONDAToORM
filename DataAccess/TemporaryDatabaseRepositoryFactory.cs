@@ -10,23 +10,26 @@ namespace DataAccess
 {
     public class TemporaryDatabaseRepositoryFactory(IConfiguration configuration) : ITemporaryDatabaseRepositoryFactory
     {
-        private readonly IConfiguration configuration = configuration;
+        private readonly IConfiguration configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
         public ITemporaryDatabaseRepository CreateTemporaryDatabaseRepository(string databaseEngine)
         {
-            var connStr = configuration[$"ConnectionStrings:{databaseEngine}"];
-
-            if (string.IsNullOrWhiteSpace(databaseEngine) || string.IsNullOrWhiteSpace(connStr))
+            if (string.IsNullOrWhiteSpace(databaseEngine))
             {
-                throw new NotSupportedException();
+                throw new ArgumentException("Database engine cannot be null or empty.", nameof(databaseEngine));
             }
 
-            var databaseEngineLower = databaseEngine.ToLower();
+            var connectionString = configuration[$"ConnectionStrings:{databaseEngine}"];
 
-            return databaseEngineLower switch
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                "postgresql" => new PostgreSQLDatabaseRepository(connStr),
-                _ => throw new NotSupportedException()
+                throw new ArgumentException($"Connection string for '{databaseEngine}' not found.", nameof(connectionString));
+            }
+
+            return databaseEngine.ToLower() switch
+            {
+                "postgresql" => new PostgreSQLDatabaseRepository(connectionString),
+                _ => throw new ArgumentException($"Database engine '{databaseEngine}' is not supported.", nameof(databaseEngine))
             };
         }
     }

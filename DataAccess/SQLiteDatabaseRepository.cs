@@ -3,7 +3,6 @@ using Domain.Repositories;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Sqlite.Diagnostics.Internal;
@@ -32,21 +31,19 @@ namespace DataAccess
         {
             try
             {
-                using (var connection = new SqliteConnection(ConnectionString))
+                using var connection = new SqliteConnection(ConnectionString);
+                await connection.OpenAsync();
+                var query = "SELECT name FROM sqlite_master WHERE type='table'";
+                using var command = new SqliteCommand(query, connection);
+                using var reader = await command.ExecuteReaderAsync();
+
+                int rowCount = 0;
+                while (await reader.ReadAsync())
                 {
-                    await connection.OpenAsync();
-                    var query = "SELECT name FROM sqlite_master WHERE type='table'";
-                    using var command = new SqliteCommand(query, connection);
-                    using var reader = await command.ExecuteReaderAsync();
-
-                    int rowCount = 0;
-                    while (await reader.ReadAsync())
-                    {
-                        rowCount++;
-                    }
-
-                    return rowCount > 0;
+                    rowCount++;
                 }
+
+                return rowCount > 0;
             }
             catch (Exception)
             {

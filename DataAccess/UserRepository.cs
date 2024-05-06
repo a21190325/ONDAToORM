@@ -3,8 +3,8 @@ using Domain.Repositories;
 
 namespace DataAccess
 {
-	public class UserRepository : IUserRepository
-	{
+    public class UserRepository : IUserRepository
+    {
         public User? Get(string username, string password)
         {
             var users = new List<User>

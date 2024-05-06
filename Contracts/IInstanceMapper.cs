@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Contracts
+﻿namespace Contracts
 {
-	public interface IInstanceMapper
-	{
-		TDestination Map<TDestination>(object source);
-	}
+    public interface IInstanceMapper
+    {
+        TDestination Map<TDestination>(object source);
+    }
 }

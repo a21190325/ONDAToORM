@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-
-namespace DataAccess
+﻿namespace DataAccess
 {
     public abstract class BaseTemporaryDatabaseRepository(string connectionString)
     {

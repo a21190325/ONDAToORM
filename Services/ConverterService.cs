@@ -3,7 +3,6 @@ using Contracts.Dtos.Errors;
 using Contracts.Dtos.Shared;
 using Contracts.Interfaces;
 using Domain.Repositories;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 
 namespace Services

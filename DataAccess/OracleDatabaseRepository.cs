@@ -2,35 +2,31 @@
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
+using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Diagnostics.Internal;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Scaffolding.Internal;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Oracle.EntityFrameworkCore.Diagnostics.Internal;
+using Oracle.EntityFrameworkCore.Scaffolding.Internal;
+using Oracle.EntityFrameworkCore.Storage.Internal;
+using Oracle.ManagedDataAccess.Client;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess
 {
-    public class PostgreSQLDatabaseRepository(string connectionString) : BaseTemporaryDatabaseRepository(connectionString), ITemporaryDatabaseRepository
+    public class OracleDatabaseRepository(string connectionString) : BaseTemporaryDatabaseRepository(connectionString), ITemporaryDatabaseRepository
     {
         public async Task<bool> CheckDatabaseExistance()
         {
             var databaseExists = false;
 
-            using (var connection = new NpgsqlConnection(connectionString))
+            using (OracleConnection connection = new(connectionString))
             {
-                connection.Open();
-                var databaseExistsQuery = $"SELECT 1 FROM pg_database WHERE datname = '{databaseName}'";
-                using var command = new NpgsqlCommand(databaseExistsQuery, connection);
-                databaseExists = await command.ExecuteScalarAsync() != null;
+                await connection.OpenAsync();
+                var databaseExistsQuery = $"SELECT COUNT(*) FROM dba_users WHERE username = '{databaseName.ToUpper()}'";
+                using OracleCommand command = new(databaseExistsQuery, connection);
+                var result = await command.ExecuteScalarAsync();
+                databaseExists = result != DBNull.Value && Convert.ToInt32(result) > 0;
             }
 
             return databaseExists;
@@ -40,10 +36,10 @@ namespace DataAccess
         {
             try
             {
-                using var connection = new NpgsqlConnection(connectionString);
+                using OracleConnection connection = new(connectionString);
                 connection.Open();
-                var createDatabaseQuery = $"CREATE DATABASE {databaseName}";
-                using var createDatabaseCommand = new NpgsqlCommand(createDatabaseQuery, connection);
+                var createDatabaseQuery = $"CREATE USER {databaseName} IDENTIFIED BY password";
+                using OracleCommand createDatabaseCommand = new(createDatabaseQuery, connection);
                 await createDatabaseCommand.ExecuteNonQueryAsync();
             }
             catch (Exception)
@@ -58,10 +54,10 @@ namespace DataAccess
         {
             try
             {
-                using var connection = new NpgsqlConnection(connectionString);
-                connection.Open();
-                var dropDatabaseQuery = $"DROP DATABASE {databaseName} WITH (FORCE)";
-                using var dropDatabaseCommand = new NpgsqlCommand(dropDatabaseQuery, connection);
+                using OracleConnection connection = new(connectionString);
+                await connection.OpenAsync();
+                var dropDatabaseQuery = $"DROP USER {databaseName} CASCADE";
+                using OracleCommand dropDatabaseCommand = new(dropDatabaseQuery, connection);
                 await dropDatabaseCommand.ExecuteNonQueryAsync();
             }
             catch (Exception)
@@ -74,20 +70,19 @@ namespace DataAccess
 
         public Task<List<FileDto>> GetCSharpFilesFromDatabase()
         {
-            var connectionStringWithDb = $"{connectionString};Database={databaseName}";
             List<FileDto> sourceFiles = [];
 
             try
             {
                 var scaffoldService = new ServiceCollection()
-                   .AddEntityFrameworkNpgsql()
+                   .AddEntityFrameworkOracle()
                    .AddLogging()
                    .AddEntityFrameworkDesignTimeServices()
-                   .AddSingleton<LoggingDefinitions, NpgsqlLoggingDefinitions>()
-                   .AddSingleton<IRelationalTypeMappingSource, NpgsqlTypeMappingSource>()
+                   .AddSingleton<LoggingDefinitions, OracleLoggingDefinitions>()
+                   .AddSingleton<IRelationalTypeMappingSource, OracleTypeMappingSource>()
                    .AddSingleton<IAnnotationCodeGenerator, AnnotationCodeGenerator>()
-                   .AddSingleton<IDatabaseModelFactory, NpgsqlDatabaseModelFactory>()
-                   .AddSingleton<IProviderConfigurationCodeGenerator, NpgsqlCodeGenerator>()
+                   .AddSingleton<IDatabaseModelFactory, OracleDatabaseModelFactory>()
+                   .AddSingleton<IProviderConfigurationCodeGenerator, OracleCodeGenerator>()
                    .AddSingleton<IScaffoldingModelFactory, RelationalScaffoldingModelFactory>()
                    .AddSingleton<IPluralizer, Bricelam.EntityFrameworkCore.Design.Pluralizer>()
                    .AddSingleton<ProviderCodeGeneratorDependencies>()
@@ -95,7 +90,7 @@ namespace DataAccess
                    .BuildServiceProvider()
                    .GetRequiredService<IReverseEngineerScaffolder>();
 
-                var dbOpts = new DatabaseModelFactoryOptions();
+                var dbOpts = new DatabaseModelFactoryOptions(schemas: new List<string> { databaseName.ToUpper() });
                 var modelOpts = new ModelReverseEngineerOptions();
                 var codeGenOpts = new ModelCodeGenerationOptions
                 {
@@ -106,7 +101,7 @@ namespace DataAccess
                     SuppressConnectionStringWarning = true
                 };
 
-                var scaffoldedModelSources = scaffoldService?.ScaffoldModel(connectionStringWithDb, dbOpts, modelOpts, codeGenOpts);
+                var scaffoldedModelSources = scaffoldService?.ScaffoldModel(connectionString, dbOpts, modelOpts, codeGenOpts);
                 if (scaffoldedModelSources?.ContextFile != default)
                 {
                     var contextFile = scaffoldedModelSources.ContextFile;
@@ -125,7 +120,7 @@ namespace DataAccess
                         Name = x.Path
                     }));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new ArgumentException("Exception executing scaffolding command.", connectionString);
             }
@@ -135,18 +130,27 @@ namespace DataAccess
 
         public async Task<bool> RunSQLScript(string sqlScript)
         {
-            try
+            sqlScript = $"alter session set current_schema = {databaseName};{sqlScript}";
+            string[] splitQuerys = sqlScript.Split(';');
+
+            using OracleConnection connection = new(connectionString);
+            await connection.OpenAsync();
+
+            foreach (var query in splitQuerys)
             {
-                var connectionStringWithDb = $"{connectionString};Database={databaseName}";
-                NpgsqlConnection.ClearAllPools();
-                using var connection = new NpgsqlConnection(connectionStringWithDb);
-                connection.Open();
-                using var command = new NpgsqlCommand(sqlScript, connection);
-                await command.ExecuteNonQueryAsync();
-            }
-            catch (Exception)
-            {
-                return false;
+                if (!string.IsNullOrWhiteSpace(query))
+                {
+                    try
+                    {
+                        OracleCommand command = connection.CreateCommand();
+                        command.CommandText = query;
+                        await command.ExecuteNonQueryAsync();
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
+                }
             }
 
             return true;

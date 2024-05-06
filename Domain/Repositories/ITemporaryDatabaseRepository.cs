@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,6 @@ namespace Domain.Repositories
         Task<bool> DropDatabase();
         Task<bool> CreateDatabase();
         Task<bool> RunSQLScript(string sqlScript);
-        Task<string> GetDatabaseConnectionString();
+        Task<List<FileDto>> GetCSharpFilesFromDatabase();
     }
 }

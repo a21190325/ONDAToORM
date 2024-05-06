@@ -29,6 +29,7 @@ namespace DataAccess
             return databaseEngine.ToLower() switch
             {
                 "postgresql" => new PostgreSQLDatabaseRepository(connectionString),
+                "oracle" => new OracleDatabaseRepository(connectionString),
                 _ => throw new ArgumentException($"Database engine '{databaseEngine}' is not supported.", nameof(databaseEngine))
             };
         }

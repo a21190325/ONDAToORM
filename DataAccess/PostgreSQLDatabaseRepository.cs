@@ -84,7 +84,7 @@ namespace DataAccess
                .BuildServiceProvider()
                .GetRequiredService<IReverseEngineerScaffolder>();
 
-            return await GetCSharpFilesWithEFCore(scaffoldService);
+            return await GetCSharpFilesWithEFCore(scaffoldService, $"Database={databaseName}");
         }
 
         public async Task<bool> RunSQLScript(string sqlScript)

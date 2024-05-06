@@ -9,9 +9,11 @@ namespace DataAccess
         internal readonly string databaseName = "db_onda_to_orm_temp";
         internal string ConnectionString = connectionString;
 
-        internal Task<List<FileDto>> GetCSharpFilesWithEFCore(IReverseEngineerScaffolder scaffoldService, List<string>? schemas = null)
+        internal Task<List<FileDto>> GetCSharpFilesWithEFCore(IReverseEngineerScaffolder scaffoldService, string? connectionStringSufix = null, List<string>? schemas = null)
         {
-            var connectionStringWithDb = $"{ConnectionString};Database={databaseName}";
+            var connectionStringScaffold = ConnectionString;
+            if (connectionStringSufix != null)
+                connectionStringScaffold += $";{connectionStringSufix}";
             List<FileDto> sourceFiles = [];
 
             try
@@ -27,7 +29,7 @@ namespace DataAccess
                     SuppressConnectionStringWarning = true
                 };
 
-                var scaffoldedModelSources = scaffoldService?.ScaffoldModel(connectionStringWithDb, dbOpts, modelOpts, codeGenOpts);
+                var scaffoldedModelSources = scaffoldService?.ScaffoldModel(connectionStringScaffold, dbOpts, modelOpts, codeGenOpts);
                 if (scaffoldedModelSources?.ContextFile != default)
                 {
                     var contextFile = scaffoldedModelSources.ContextFile;

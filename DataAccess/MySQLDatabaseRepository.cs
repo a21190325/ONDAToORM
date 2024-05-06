@@ -97,7 +97,7 @@ namespace DataAccess
                .BuildServiceProvider()
                .GetRequiredService<IReverseEngineerScaffolder>();
 
-            return await GetCSharpFilesWithEFCore(scaffoldService, [databaseName]);
+            return await GetCSharpFilesWithEFCore(scaffoldService, $"Database={databaseName}", [databaseName]);
         }
     }
 }

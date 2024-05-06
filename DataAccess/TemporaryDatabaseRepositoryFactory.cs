@@ -1,10 +1,5 @@
 ﻿using Domain.Repositories;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess
 {
@@ -30,6 +25,9 @@ namespace DataAccess
             {
                 "postgresql" => new PostgreSQLDatabaseRepository(connectionString),
                 "oracle" => new OracleDatabaseRepository(connectionString),
+                "mysql" => new MySQLDatabaseRepository(connectionString),
+                "mariadb" => new MySQLDatabaseRepository(connectionString),
+                "sqlite" => new SQLiteDatabaseRepository(connectionString),
                 _ => throw new ArgumentException($"Database engine '{databaseEngine}' is not supported.", nameof(databaseEngine))
             };
         }

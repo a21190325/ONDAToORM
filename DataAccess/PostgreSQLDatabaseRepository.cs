@@ -2,20 +2,15 @@
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
+using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Diagnostics.Internal;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Scaffolding.Internal;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess
 {
@@ -25,7 +20,7 @@ namespace DataAccess
         {
             var databaseExists = false;
 
-            using (var connection = new NpgsqlConnection(connectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 connection.Open();
                 var databaseExistsQuery = $"SELECT 1 FROM pg_database WHERE datname = '{databaseName}'";
@@ -40,7 +35,7 @@ namespace DataAccess
         {
             try
             {
-                using var connection = new NpgsqlConnection(connectionString);
+                using var connection = new NpgsqlConnection(ConnectionString);
                 connection.Open();
                 var createDatabaseQuery = $"CREATE DATABASE {databaseName}";
                 using var createDatabaseCommand = new NpgsqlCommand(createDatabaseQuery, connection);
@@ -58,7 +53,7 @@ namespace DataAccess
         {
             try
             {
-                using var connection = new NpgsqlConnection(connectionString);
+                using var connection = new NpgsqlConnection(ConnectionString);
                 connection.Open();
                 var dropDatabaseQuery = $"DROP DATABASE {databaseName} WITH (FORCE)";
                 using var dropDatabaseCommand = new NpgsqlCommand(dropDatabaseQuery, connection);
@@ -74,7 +69,7 @@ namespace DataAccess
 
         public Task<List<FileDto>> GetCSharpFilesFromDatabase()
         {
-            var connectionStringWithDb = $"{connectionString};Database={databaseName}";
+            var connectionStringWithDb = $"{ConnectionString};Database={databaseName}";
             List<FileDto> sourceFiles = [];
 
             try
@@ -127,7 +122,7 @@ namespace DataAccess
             }
             catch (Exception ex)
             {
-                throw new ArgumentException("Exception executing scaffolding command.", connectionString);
+                throw new ArgumentException("Exception executing scaffolding command.", ConnectionString);
             }
 
             return Task.FromResult(sourceFiles);
@@ -137,7 +132,7 @@ namespace DataAccess
         {
             try
             {
-                var connectionStringWithDb = $"{connectionString};Database={databaseName}";
+                var connectionStringWithDb = $"{ConnectionString};Database={databaseName}";
                 NpgsqlConnection.ClearAllPools();
                 using var connection = new NpgsqlConnection(connectionStringWithDb);
                 connection.Open();

@@ -1,112 +1,144 @@
 ﻿using Domain.Entities;
 using Domain.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Scaffolding;
+using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
+using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess
 {
     public class MySQLDatabaseRepository(string connectionString) : BaseTemporaryDatabaseRepository(connectionString), ITemporaryDatabaseRepository
     {
-        //public async Task<bool> CheckDatabaseExistance()
-        //{
-        //    var databaseExists = false;
-
-        //    using (var connection = new NpgsqlConnection(connectionString))
-        //    {
-        //        connection.Open();
-        //        var databaseExistsQuery = $"SELECT 1 FROM pg_database WHERE datname = '{databaseName}'";
-        //        using var command = new NpgsqlCommand(databaseExistsQuery, connection);
-        //        databaseExists = await command.ExecuteScalarAsync() != null;
-        //    }
-
-        //    return databaseExists;
-        //}
-
-        //public async Task<bool> CreateDatabase()
-        //{
-        //    try
-        //    {
-        //        using var connection = new NpgsqlConnection(connectionString);
-        //        connection.Open();
-        //        var createDatabaseQuery = $"CREATE DATABASE {databaseName}";
-        //        using var createDatabaseCommand = new NpgsqlCommand(createDatabaseQuery, connection);
-        //        await createDatabaseCommand.ExecuteNonQueryAsync();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-
-        //    return true;
-        //}
-
-        //public async Task<bool> DropDatabase()
-        //{
-        //    try
-        //    {
-        //        using var connection = new NpgsqlConnection(connectionString);
-        //        connection.Open();
-        //        var dropDatabaseQuery = $"DROP DATABASE {databaseName} WITH (FORCE)";
-        //        using var dropDatabaseCommand = new NpgsqlCommand(dropDatabaseQuery, connection);
-        //        await dropDatabaseCommand.ExecuteNonQueryAsync();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-
-        //    return true;
-        //}
-
-        //public Task<string> GetDatabaseConnectionString()
-        //{
-        //    return Task.FromResult(connectionString);
-        //}
-
-        //public async Task<bool> RunSQLScript(string sqlScript)
-        //{
-        //    try
-        //    {
-        //        var connectionStringWithDb = $"{connectionString};Database={databaseName}";
-        //        NpgsqlConnection.ClearAllPools();
-        //        using var connection = new NpgsqlConnection(connectionStringWithDb);
-        //        connection.Open();
-        //        using var command = new NpgsqlCommand(sqlScript, connection);
-        //        await command.ExecuteNonQueryAsync();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-
-        //    return true;
-        //}
-        public Task<bool> CheckDatabaseExistance()
+        public async Task<bool> CheckDatabaseExistance()
         {
-            throw new NotImplementedException();
+            bool databaseExists = false;
+            using (var connection = new MySqlConnection(ConnectionString))
+            {
+                await connection.OpenAsync();
+                var databaseExistsQuery = $"SELECT 1 FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '{databaseName}'";
+                using var command = new MySqlCommand(databaseExistsQuery, connection);
+                databaseExists = await command.ExecuteScalarAsync() != null;
+            }
+            return databaseExists;
         }
 
-        public Task<bool> CreateDatabase()
+        public async Task<bool> CreateDatabase()
         {
-            throw new NotImplementedException();
+            try
+            {
+                using var connection = new MySqlConnection(ConnectionString);
+                await connection.OpenAsync();
+                var createDatabaseQuery = $"CREATE DATABASE `{databaseName}`";
+                using var createDatabaseCommand = new MySqlCommand(createDatabaseQuery, connection);
+                await createDatabaseCommand.ExecuteNonQueryAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
 
-        public Task<bool> DropDatabase()
+        public async Task<bool> DropDatabase()
         {
-            throw new NotImplementedException();
+            try
+            {
+                using var connection = new MySqlConnection(ConnectionString);
+                await connection.OpenAsync();
+                var dropDatabaseQuery = $"DROP DATABASE IF EXISTS `{databaseName}`";
+                using var dropDatabaseCommand = new MySqlCommand(dropDatabaseQuery, connection);
+                await dropDatabaseCommand.ExecuteNonQueryAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<bool> RunSQLScript(string sqlScript)
+        {
+            try
+            {
+                var connectionStringWithDb = $"{ConnectionString};Database={databaseName}";
+                using var connection = new MySqlConnection(connectionStringWithDb);
+                await connection.OpenAsync();
+                using var command = new MySqlCommand(sqlScript, connection);
+                await command.ExecuteNonQueryAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
 
         public Task<List<FileDto>> GetCSharpFilesFromDatabase()
         {
-            throw new NotImplementedException();
-        }
+            var connectionStringWithDb = $"{ConnectionString};Database={databaseName}";
+            List<FileDto> sourceFiles = [];
 
-        public Task<bool> RunSQLScript(string sqlScript)
-        {
-            throw new NotImplementedException();
+            try
+            {
+                var scaffoldService = new ServiceCollection()
+                   .AddEntityFrameworkMySql()
+                   .AddLogging()
+                   .AddEntityFrameworkDesignTimeServices()
+                   .AddSingleton<LoggingDefinitions, MySqlLoggingDefinitions>()
+                   .AddSingleton<IRelationalTypeMappingSource, MySqlTypeMappingSource>()
+                   .AddSingleton<IAnnotationCodeGenerator, AnnotationCodeGenerator>()
+                   .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>()
+                   .AddSingleton<IProviderConfigurationCodeGenerator, MySqlCodeGenerator>()
+                   .AddSingleton<IScaffoldingModelFactory, RelationalScaffoldingModelFactory>()
+                   .AddSingleton<IPluralizer, Bricelam.EntityFrameworkCore.Design.Pluralizer>()
+                   .AddSingleton<ProviderCodeGeneratorDependencies>()
+                   .AddSingleton<AnnotationCodeGeneratorDependencies>()
+                   .BuildServiceProvider()
+                   .GetRequiredService<IReverseEngineerScaffolder>();
+
+                var dbOpts = new DatabaseModelFactoryOptions(schemas: [databaseName]);
+                var modelOpts = new ModelReverseEngineerOptions();
+                var codeGenOpts = new ModelCodeGenerationOptions
+                {
+                    RootNamespace = "ONDAToORM",
+                    ContextName = "DataContext",
+                    ContextNamespace = "ONDAToORM.Context",
+                    ModelNamespace = "ONDAToORM.Models",
+                    SuppressConnectionStringWarning = true
+                };
+
+                var scaffoldedModelSources = scaffoldService?.ScaffoldModel(connectionStringWithDb, dbOpts, modelOpts, codeGenOpts);
+                if (scaffoldedModelSources?.ContextFile != default)
+                {
+                    var contextFile = scaffoldedModelSources.ContextFile;
+                    sourceFiles =
+                    [
+                        new() {
+                            Code = Encoding.UTF8.GetBytes(contextFile.Code),
+                            Name = contextFile.Path
+                        }
+                    ];
+                }
+                if (scaffoldedModelSources?.AdditionalFiles != default)
+                    sourceFiles.AddRange(scaffoldedModelSources.AdditionalFiles.Select(x => new FileDto()
+                    {
+                        Code = Encoding.UTF8.GetBytes(x.Code),
+                        Name = x.Path
+                    }));
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException("Exception executing scaffolding command.", ConnectionString);
+            }
+
+            return Task.FromResult(sourceFiles);
         }
     }
 }

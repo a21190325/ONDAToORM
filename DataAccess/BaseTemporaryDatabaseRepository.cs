@@ -5,6 +5,6 @@ namespace DataAccess
     public abstract class BaseTemporaryDatabaseRepository(string connectionString)
     {
         internal readonly string databaseName = "db_onda_to_orm_temp";
-        internal readonly string connectionString = connectionString;
+        internal string ConnectionString = connectionString;
     }
 }

@@ -20,7 +20,7 @@ namespace DataAccess
         {
             var databaseExists = false;
 
-            using (OracleConnection connection = new(connectionString))
+            using (OracleConnection connection = new(ConnectionString))
             {
                 await connection.OpenAsync();
                 var databaseExistsQuery = $"SELECT COUNT(*) FROM dba_users WHERE username = '{databaseName.ToUpper()}'";
@@ -36,7 +36,7 @@ namespace DataAccess
         {
             try
             {
-                using OracleConnection connection = new(connectionString);
+                using OracleConnection connection = new(ConnectionString);
                 connection.Open();
                 var createDatabaseQuery = $"CREATE USER {databaseName} IDENTIFIED BY password";
                 using OracleCommand createDatabaseCommand = new(createDatabaseQuery, connection);
@@ -54,7 +54,7 @@ namespace DataAccess
         {
             try
             {
-                using OracleConnection connection = new(connectionString);
+                using OracleConnection connection = new(ConnectionString);
                 await connection.OpenAsync();
                 var dropDatabaseQuery = $"DROP USER {databaseName} CASCADE";
                 using OracleCommand dropDatabaseCommand = new(dropDatabaseQuery, connection);
@@ -90,7 +90,7 @@ namespace DataAccess
                    .BuildServiceProvider()
                    .GetRequiredService<IReverseEngineerScaffolder>();
 
-                var dbOpts = new DatabaseModelFactoryOptions(schemas: new List<string> { databaseName.ToUpper() });
+                var dbOpts = new DatabaseModelFactoryOptions(schemas: [databaseName.ToUpper()]);
                 var modelOpts = new ModelReverseEngineerOptions();
                 var codeGenOpts = new ModelCodeGenerationOptions
                 {
@@ -101,7 +101,7 @@ namespace DataAccess
                     SuppressConnectionStringWarning = true
                 };
 
-                var scaffoldedModelSources = scaffoldService?.ScaffoldModel(connectionString, dbOpts, modelOpts, codeGenOpts);
+                var scaffoldedModelSources = scaffoldService?.ScaffoldModel(ConnectionString, dbOpts, modelOpts, codeGenOpts);
                 if (scaffoldedModelSources?.ContextFile != default)
                 {
                     var contextFile = scaffoldedModelSources.ContextFile;
@@ -122,7 +122,7 @@ namespace DataAccess
             }
             catch (Exception)
             {
-                throw new ArgumentException("Exception executing scaffolding command.", connectionString);
+                throw new ArgumentException("Exception executing scaffolding command.", ConnectionString);
             }
 
             return Task.FromResult(sourceFiles);
@@ -133,7 +133,7 @@ namespace DataAccess
             sqlScript = $"alter session set current_schema = {databaseName};{sqlScript}";
             string[] splitQuerys = sqlScript.Split(';');
 
-            using OracleConnection connection = new(connectionString);
+            using OracleConnection connection = new(ConnectionString);
             await connection.OpenAsync();
 
             foreach (var query in splitQuerys)

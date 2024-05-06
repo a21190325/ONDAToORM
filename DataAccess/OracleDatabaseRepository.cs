@@ -10,7 +10,6 @@ using Oracle.EntityFrameworkCore.Diagnostics.Internal;
 using Oracle.EntityFrameworkCore.Scaffolding.Internal;
 using Oracle.EntityFrameworkCore.Storage.Internal;
 using Oracle.ManagedDataAccess.Client;
-using System.Text;
 
 namespace DataAccess
 {
@@ -68,64 +67,25 @@ namespace DataAccess
             return true;
         }
 
-        public Task<List<FileDto>> GetCSharpFilesFromDatabase()
+        public async Task<List<FileDto>> GetCSharpFilesFromDatabase()
         {
-            List<FileDto> sourceFiles = [];
+            var scaffoldService = new ServiceCollection()
+               .AddEntityFrameworkOracle()
+               .AddLogging()
+               .AddEntityFrameworkDesignTimeServices()
+               .AddSingleton<LoggingDefinitions, OracleLoggingDefinitions>()
+               .AddSingleton<IRelationalTypeMappingSource, OracleTypeMappingSource>()
+               .AddSingleton<IAnnotationCodeGenerator, AnnotationCodeGenerator>()
+               .AddSingleton<IDatabaseModelFactory, OracleDatabaseModelFactory>()
+               .AddSingleton<IProviderConfigurationCodeGenerator, OracleCodeGenerator>()
+               .AddSingleton<IScaffoldingModelFactory, RelationalScaffoldingModelFactory>()
+               .AddSingleton<IPluralizer, Bricelam.EntityFrameworkCore.Design.Pluralizer>()
+               .AddSingleton<ProviderCodeGeneratorDependencies>()
+               .AddSingleton<AnnotationCodeGeneratorDependencies>()
+               .BuildServiceProvider()
+               .GetRequiredService<IReverseEngineerScaffolder>();
 
-            try
-            {
-                var scaffoldService = new ServiceCollection()
-                   .AddEntityFrameworkOracle()
-                   .AddLogging()
-                   .AddEntityFrameworkDesignTimeServices()
-                   .AddSingleton<LoggingDefinitions, OracleLoggingDefinitions>()
-                   .AddSingleton<IRelationalTypeMappingSource, OracleTypeMappingSource>()
-                   .AddSingleton<IAnnotationCodeGenerator, AnnotationCodeGenerator>()
-                   .AddSingleton<IDatabaseModelFactory, OracleDatabaseModelFactory>()
-                   .AddSingleton<IProviderConfigurationCodeGenerator, OracleCodeGenerator>()
-                   .AddSingleton<IScaffoldingModelFactory, RelationalScaffoldingModelFactory>()
-                   .AddSingleton<IPluralizer, Bricelam.EntityFrameworkCore.Design.Pluralizer>()
-                   .AddSingleton<ProviderCodeGeneratorDependencies>()
-                   .AddSingleton<AnnotationCodeGeneratorDependencies>()
-                   .BuildServiceProvider()
-                   .GetRequiredService<IReverseEngineerScaffolder>();
-
-                var dbOpts = new DatabaseModelFactoryOptions(schemas: [databaseName.ToUpper()]);
-                var modelOpts = new ModelReverseEngineerOptions();
-                var codeGenOpts = new ModelCodeGenerationOptions
-                {
-                    RootNamespace = "ONDAToORM",
-                    ContextName = "DataContext",
-                    ContextNamespace = "ONDAToORM.Context",
-                    ModelNamespace = "ONDAToORM.Models",
-                    SuppressConnectionStringWarning = true
-                };
-
-                var scaffoldedModelSources = scaffoldService?.ScaffoldModel(ConnectionString, dbOpts, modelOpts, codeGenOpts);
-                if (scaffoldedModelSources?.ContextFile != default)
-                {
-                    var contextFile = scaffoldedModelSources.ContextFile;
-                    sourceFiles =
-                    [
-                        new() {
-                            Code = Encoding.UTF8.GetBytes(contextFile.Code),
-                            Name = contextFile.Path
-                        }
-                    ];
-                }
-                if (scaffoldedModelSources?.AdditionalFiles != default)
-                    sourceFiles.AddRange(scaffoldedModelSources.AdditionalFiles.Select(x => new FileDto()
-                    {
-                        Code = Encoding.UTF8.GetBytes(x.Code),
-                        Name = x.Path
-                    }));
-            }
-            catch (Exception)
-            {
-                throw new ArgumentException("Exception executing scaffolding command.", ConnectionString);
-            }
-
-            return Task.FromResult(sourceFiles);
+            return await GetCSharpFilesWithEFCore(scaffoldService, [databaseName.ToUpper()]);
         }
 
         public async Task<bool> RunSQLScript(string sqlScript)

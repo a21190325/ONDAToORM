@@ -10,7 +10,6 @@ using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using System.Text;
 
 namespace DataAccess
 {
@@ -80,65 +79,25 @@ namespace DataAccess
             return true;
         }
 
-        public Task<List<FileDto>> GetCSharpFilesFromDatabase()
+        public async Task<List<FileDto>> GetCSharpFilesFromDatabase()
         {
-            var connectionStringWithDb = $"{ConnectionString};Database={databaseName}";
-            List<FileDto> sourceFiles = [];
+            var scaffoldService = new ServiceCollection()
+               .AddEntityFrameworkMySql()
+               .AddLogging()
+               .AddEntityFrameworkDesignTimeServices()
+               .AddSingleton<LoggingDefinitions, MySqlLoggingDefinitions>()
+               .AddSingleton<IRelationalTypeMappingSource, MySqlTypeMappingSource>()
+               .AddSingleton<IAnnotationCodeGenerator, AnnotationCodeGenerator>()
+               .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>()
+               .AddSingleton<IProviderConfigurationCodeGenerator, MySqlCodeGenerator>()
+               .AddSingleton<IScaffoldingModelFactory, RelationalScaffoldingModelFactory>()
+               .AddSingleton<IPluralizer, Bricelam.EntityFrameworkCore.Design.Pluralizer>()
+               .AddSingleton<ProviderCodeGeneratorDependencies>()
+               .AddSingleton<AnnotationCodeGeneratorDependencies>()
+               .BuildServiceProvider()
+               .GetRequiredService<IReverseEngineerScaffolder>();
 
-            try
-            {
-                var scaffoldService = new ServiceCollection()
-                   .AddEntityFrameworkMySql()
-                   .AddLogging()
-                   .AddEntityFrameworkDesignTimeServices()
-                   .AddSingleton<LoggingDefinitions, MySqlLoggingDefinitions>()
-                   .AddSingleton<IRelationalTypeMappingSource, MySqlTypeMappingSource>()
-                   .AddSingleton<IAnnotationCodeGenerator, AnnotationCodeGenerator>()
-                   .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>()
-                   .AddSingleton<IProviderConfigurationCodeGenerator, MySqlCodeGenerator>()
-                   .AddSingleton<IScaffoldingModelFactory, RelationalScaffoldingModelFactory>()
-                   .AddSingleton<IPluralizer, Bricelam.EntityFrameworkCore.Design.Pluralizer>()
-                   .AddSingleton<ProviderCodeGeneratorDependencies>()
-                   .AddSingleton<AnnotationCodeGeneratorDependencies>()
-                   .BuildServiceProvider()
-                   .GetRequiredService<IReverseEngineerScaffolder>();
-
-                var dbOpts = new DatabaseModelFactoryOptions(schemas: [databaseName]);
-                var modelOpts = new ModelReverseEngineerOptions();
-                var codeGenOpts = new ModelCodeGenerationOptions
-                {
-                    RootNamespace = "ONDAToORM",
-                    ContextName = "DataContext",
-                    ContextNamespace = "ONDAToORM.Context",
-                    ModelNamespace = "ONDAToORM.Models",
-                    SuppressConnectionStringWarning = true
-                };
-
-                var scaffoldedModelSources = scaffoldService?.ScaffoldModel(connectionStringWithDb, dbOpts, modelOpts, codeGenOpts);
-                if (scaffoldedModelSources?.ContextFile != default)
-                {
-                    var contextFile = scaffoldedModelSources.ContextFile;
-                    sourceFiles =
-                    [
-                        new() {
-                            Code = Encoding.UTF8.GetBytes(contextFile.Code),
-                            Name = contextFile.Path
-                        }
-                    ];
-                }
-                if (scaffoldedModelSources?.AdditionalFiles != default)
-                    sourceFiles.AddRange(scaffoldedModelSources.AdditionalFiles.Select(x => new FileDto()
-                    {
-                        Code = Encoding.UTF8.GetBytes(x.Code),
-                        Name = x.Path
-                    }));
-            }
-            catch (Exception)
-            {
-                throw new ArgumentException("Exception executing scaffolding command.", ConnectionString);
-            }
-
-            return Task.FromResult(sourceFiles);
+            return await GetCSharpFilesWithEFCore(scaffoldService, [databaseName]);
         }
     }
 }

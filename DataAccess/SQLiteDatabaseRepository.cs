@@ -10,13 +10,21 @@ using Microsoft.EntityFrameworkCore.Sqlite.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Sqlite.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DataAccess
 {
     public class SQLiteDatabaseRepository : BaseTemporaryDatabaseRepository, ITemporaryDatabaseRepository
     {
+        private readonly ILogger _logger;
+
         public SQLiteDatabaseRepository(string connectionString) : base(connectionString)
         {
+            _logger = LoggerFactory.Create(builder =>
+            {
+                builder.AddConsole();
+            }).CreateLogger<SQLiteDatabaseRepository>();
+
             var builder = new SqliteConnectionStringBuilder(connectionString);
             builder.DataSource = Path.GetFullPath(
                 Path.Combine(
@@ -24,6 +32,8 @@ namespace DataAccess
                         ?? AppDomain.CurrentDomain.BaseDirectory,
                     builder.DataSource));
             ConnectionString = builder.ToString();
+
+            _logger.LogInformation("SQLiteDatabaseRepository");
         }
 
         public async Task<bool> CheckDatabaseExistance()
@@ -113,6 +123,8 @@ namespace DataAccess
 
         public async Task<bool> RunSQLScript(string sqlScript)
         {
+            _logger.LogInformation("RunSQLScript");
+
             try
             {
                 using var connection = new SqliteConnection(ConnectionString);
@@ -123,8 +135,9 @@ namespace DataAccess
                 await command.ExecuteNonQueryAsync();
                 transaction.Commit();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "RunSQLScript exception");
                 return false;
             }
             return true;

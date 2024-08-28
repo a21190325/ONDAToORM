@@ -12,19 +12,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Data\TempSQLiteDb.db" />
+    <None Remove="Data/TempSQLiteDb.db" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Data\TempSQLiteDb.db">
+    <Content Include="Data/TempSQLiteDb.db">
       <DestinationFolder>Data</DestinationFolder>
       <CopyToOutputDirectory>Newer</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
+    <PackageReference Include="Serilog" Version="4.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 

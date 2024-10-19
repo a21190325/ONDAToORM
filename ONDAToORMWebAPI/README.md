@@ -51,6 +51,7 @@ To customize the connection strings for different databases, provide an `appsett
 ### A) Authentication request to get Bearer token
 
 **POST URL:** /api/Identity/token
+
 Body:
 ```json
 {
@@ -78,6 +79,7 @@ Response:
 
 ### B) Convertion request to transform SQL scripts in C# classes
 **POST URL:** /api/Identity/token
+
 Body:
 ```json
 {

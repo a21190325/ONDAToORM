@@ -2,13 +2,13 @@ using Contracts.Dtos.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ONDAToORMWebAPI.Swagger;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
-using WebAPI.Swagger;
 
-namespace WebAPI
+namespace ONDAToORMWebAPI
 {
     public class Program
     {

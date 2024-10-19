@@ -5,7 +5,7 @@ using Domain.Repositories;
 using Services;
 using Services.Mapper;
 
-namespace WebAPI
+namespace ONDAToORMWebAPI
 {
     public static class Bootstrapper
     {

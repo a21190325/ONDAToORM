@@ -4,7 +4,7 @@ using Contracts.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebAPI.Controllers
+namespace ONDAToORMWebAPI.Controllers
 {
     [ApiController]
     public class IdentityController : ControllerBase

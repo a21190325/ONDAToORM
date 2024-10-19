@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ONDAToORMWebAPI", "WebAPI\ONDAToORMWebAPI.csproj", "{35F15469-4077-4E12-BCFE-60BC9BCB0EB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ONDAToORMWebAPI", "ONDAToORMWebAPI\ONDAToORMWebAPI.csproj", "{35F15469-4077-4E12-BCFE-60BC9BCB0EB1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "Contracts\Contracts.csproj", "{A46C45B4-131D-43FD-9D88-A7D84554FDBF}"
 EndProject

@@ -1,5 +1,5 @@
-# .NET Core WebAPI ONDAToORM Docker Container
-This Docker image hosts a .NET Core WebAPI ONDAToORM that is exposed on port 8080, allowing easy deployment and configuration for various databases like PostgreSQL, Oracle, MySQL, MariaDB, and SQLite. The WebAPI supports external configuration through a customizable JSON settings file, enabling flexible connection strings. This .NET Core Web API provides endpoints to convert SQL scripts into C# code.
+# .NET Core WebAPI ONDAtoOrm Docker Container
+This Docker image hosts a .NET Core WebAPI ONDAtoOrm that is exposed on port 8080, allowing easy deployment and configuration for various databases like PostgreSQL, Oracle, MySQL, MariaDB, and SQLite. The WebAPI supports external configuration through a customizable JSON settings file, enabling flexible connection strings. This .NET Core Web API provides endpoints to convert SQL scripts into C# code.
 
 ## Key Features:
 * Platform: .NET Core WebAPI
@@ -13,7 +13,7 @@ This Docker image hosts a .NET Core WebAPI ONDAToORM that is exposed on port 808
 ```
 docker run -p 8080:8080 -v C:\{DIRECTORY_PATH}\TempSQLiteDb.db:/app/Data/TempSQLiteDb.db \
 -v C:\{DIRECTORY_PATH}\appsettings.json:/app/appsettings.json \
---name ONDAToORM -d a21190325/webapi
+--name ONDAtoOrm -d a21190325/ondatoormwebapi
 ```
 
 In this command:
